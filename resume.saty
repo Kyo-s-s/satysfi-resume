@@ -1,0 +1,116 @@
+@require: gr
+@require: list
+@require: color
+@require: math
+
+module Resume: sig
+  val document: 'a -> block-text -> document
+  direct +name: [
+    inline-text;
+    inline-text;
+  ] block-cmd
+  direct +name-ruby: [
+    inline-text;
+    inline-text;
+  ] block-cmd
+end = struct
+  let padding-outer = 50pt
+  let padding-inner = 30pt
+  let padding-top = 50pt
+  let thick = 1pt
+  let font-size-sm = 10pt
+  let font-size-lg = 20pt
+
+  % B5 size
+  let width = 182mm
+  let height = 257mm
+
+  %
+  let draw-line = stroke 1pt Color.black
+  let draw-dash-line = dashed-stroke 0.5pt (1pt, 1pt, 1pt) Color.black
+
+  let-mutable name <-
+    (|
+      last = {};
+      first = {};
+      last-ruby = {};
+      first-ruby = {};
+    |)
+
+  let-block ctx +name last first =
+    let base = !name in
+    let () =
+      name <- (|
+        base with last = last;
+        first = first;
+      |) in block-nil
+  let-block ctx +name-ruby last first =
+    let base = !name in
+    let () =
+      name <- (|
+        base with last-ruby = last;
+        first-ruby = first;
+      |) in block-nil
+
+  % TODO: 名前のセンタリング
+  let name-box ctx x y =
+    let name = !name in
+    let inline-sm =
+      read-inline (ctx
+        |> set-font-size font-size-sm) in
+    let inline-lg =
+      read-inline (ctx
+        |> set-font-size font-size-lg) in
+    let wid = 250pt in
+    let hgt = 50pt in
+    let la = 70pt in
+    let fi = 150pt in
+      [
+        draw-line (Gr.rectangle (x, y) (x +' wid, y -' hgt));
+        draw-text (x +' 5pt, y -' font-size-sm -' 2pt) (inline-sm { ふりがな });
+        draw-text (x +' la, y -' font-size-sm -' 2pt) (inline-sm name#last-ruby);
+        draw-text (x +' fi, y -' font-size-sm -' 2pt) (inline-sm name#first-ruby);
+        draw-dash-line (Gr.line (x, y -' font-size-sm -' 6pt) (x +' wid, y -' font-size-sm -' 6pt));
+        draw-text (x +' 5pt, y -' font-size-sm *' 2. -' 8pt) (inline-sm { 氏 名 });
+        draw-text (x +' la, y -' font-size-sm -' font-size-lg -' 10pt) (inline-lg name#last);
+        draw-text (x +' fi, y -' font-size-sm -' font-size-lg -' 10pt) (inline-lg name#first);
+      ]
+
+  let page1 ctx =
+    line-break true true ctx (inline-graphics width height 0pt (fun _ -> (List.concat [
+      [
+        draw-text (padding-outer, height -' padding-top) (read-inline (ctx
+          |> set-font-size 20pt) { 履 歴 書 });
+      ];
+      name-box ctx padding-outer (height -' padding-top -' 10pt);
+    ])))
+
+  let wakudraft =
+    [
+      stroke 1pt Color.black (Gr.rectangle (30pt, 30pt) (182mm -' 30pt, 257mm -' 30pt));
+    ]
+  let page2 ctx = line-break true true ctx (inline-graphics 182mm 257mm 0pt (fun _ -> wakudraft))
+
+  let document record inner =
+    let ctx =
+      get-initial-context 440pt (command \math)
+        |> set-dominant-narrow-script Latin
+        |> set-dominant-wide-script Kana in
+    let _ = read-block ctx inner in
+    let bb = (page1 ctx) +++ (page2 ctx) in
+      page-break (UserDefinedPaper(width, height)) (fun _ -> (|
+        text-origin = (80pt, 100pt);
+        text-height = 630pt;
+      |)) (fun _ -> (|
+        header-origin = (0pt, 0pt);
+        header-content = block-nil;
+        footer-origin = (0pt, 0pt);
+        footer-content = block-nil;
+      |)) bb
+end
+in
+
+Resume.document (||) '<
+  +name ({ 芝浦 }) ({ 太郎 });
+  +name-ruby ({ しばうら }) ({ たろう });
+>
