@@ -19,6 +19,18 @@ module Resume: sig
     int;
     int;
   ] block-cmd
+  direct +address1: [
+    inline-text;
+    inline-text;
+    inline-text;
+    inline-text;
+  ] block-cmd
+  direct +address2: [
+    inline-text;
+    inline-text;
+    inline-text;
+    inline-text;
+  ] block-cmd
   direct +sex: [inline-text] block-cmd
 end = struct
   let padding-outer = 50pt
@@ -67,7 +79,7 @@ end = struct
         first-ruby = first;
       |) in block-nil
 
-  let name-box-width = 250pt
+  let name-box-width = 300pt
   let name-box-height = 45pt
 
   % TODO: 名前のセンタリング
@@ -106,8 +118,8 @@ end = struct
 
   let-mutable sex <- {}
 
-  let-block ctx +sex inner =
-    let () = sex <- inner in block-nil
+  let-block ctx +sex it =
+    let () = sex <- it in block-nil
 
   let birthday-sex-box-width = name-box-width
   let birthday-sex-box-height = 25pt
@@ -132,15 +144,89 @@ end = struct
         draw-text (x +' wid -' sex-wid +' 20pt, y -' font-size-md -' 8pt) (inline-md ctx sex);
       ]
 
+  let-mutable address1 <-
+    (|
+      postal-code = {};
+      address = {};
+      address-ruby = {};
+      phone-number = {};
+    |)
+  let-mutable address2 <-
+    (|
+      postal-code = {};
+      address = {};
+      address-ruby = {};
+      phone-number = {};
+    |)
+
+  let-block ctx +address1 postal-code address address-ruby phone-number =
+    let () =
+      address1 <- (|
+        postal-code = postal-code;
+        address = address;
+        address-ruby = address-ruby;
+        phone-number = phone-number;
+      |) in block-nil
+  let-block ctx +address2 postal-code address address-ruby phone-number =
+    let () =
+      address2 <- (|
+        postal-code = postal-code;
+        address = address;
+        address-ruby = address-ruby;
+        phone-number = phone-number;
+      |) in block-nil
+
+  let address-box-width = width -' padding-outer -' padding-inner
+  let address-box-height = 55pt
+  let address-box-phone-width = 80pt
+
+  let address-box ctx x y address =
+    let (wid, hgt) = (address-box-width, address-box-height) in
+    let sx = 45pt in
+    let address = !address in
+    let postal-code = (inline-sm ctx { 〒 }) ++ (inline-md ctx address#postal-code) in
+    let phone-number = (inline-lg ctx address#phone-number) in
+      [
+        draw-line (Gr.rectangle (x, y) (x +' wid -' address-box-phone-width, y -' hgt));
+        draw-line (Gr.rectangle (x +' wid -' address-box-phone-width, y) (x +' wid, y -' hgt));
+        draw-dash-line (Gr.line (x, y -' font-size-sm -' 6pt) (x +' wid -' address-box-phone-width, y -' font-size-sm -' 6pt));
+        draw-text (x +' 5pt, y -' font-size-sm -' 2pt) (inline-sm ctx { ふりがな });
+        draw-text (x +' sx, y -' font-size-sm -' 2pt) (inline-sm ctx address#address-ruby);
+        draw-text (x +' sx, y -' font-size-sm -' font-size-md -' 8pt) postal-code;
+        draw-text (x +' sx, y -' font-size-sm -' font-size-md -' font-size-xl -' 14pt) (inline-xl ctx address#address);
+        draw-text (x +' wid -' address-box-phone-width +' 4pt, y -' font-size-sm -' 2pt) (inline-sm ctx { 電話 });
+        draw-text (x +' wid -' address-box-phone-width *' 0.5 -' (get-natural-width phone-number) *' 0.5, y -' font-size-sm -' font-size-lg -' 14pt) phone-number;
+      ]
+
+  let address1-box ctx x y =
+    List.append (address-box ctx x y address1) [
+      draw-text (x +' 5pt, y -' font-size-sm *' 2. -' 8pt) (inline-sm ctx { 現住所 });
+    ]
+
+  let address2-box ctx x y =
+    let warn = inline-sm ctx { (現住所以外に連絡する場合のみ記入) } in
+      List.append (address-box ctx x y address2) [
+        draw-text (x +' 5pt, y -' font-size-sm *' 2. -' 8pt) (inline-sm ctx { 連絡先 });
+        draw-text (x +' address-box-width -' address-box-phone-width -' 5pt -' (get-natural-width warn), y -' font-size-sm *' 2. -' 8pt) warn;
+      ]
+
   let page1 ctx =
-    line-break true true ctx (inline-graphics width height 0pt (fun _ -> (List.concat [
+    let base-gr =
       [
         draw-text (padding-outer, height -' padding-top) (read-inline (ctx
           |> set-font-size 20pt) { 履 歴 書 });
-      ];
-      name-box ctx padding-outer (height -' padding-top -' 10pt);
-      birthday-sex-box ctx padding-outer (height -' padding-top -' 10pt -' name-box-height);
-    ])))
+      ] in
+    let name-box-y = height -' padding-top -' 10pt in
+    let birthday-sex-box-y = name-box-y -' name-box-height in
+    let address1-box-y = birthday-sex-box-y -' birthday-sex-box-height in
+    let address2-box-y = address1-box-y -' address-box-height in
+      line-break true true ctx (inline-graphics width height 0pt (fun _ -> (List.concat [
+        base-gr;
+        name-box ctx padding-outer name-box-y;
+        birthday-sex-box ctx padding-outer birthday-sex-box-y;
+        address1-box ctx padding-outer address1-box-y;
+        address2-box ctx padding-outer address2-box-y;
+      ])))
 
   let wakudraft =
     [
@@ -173,4 +259,7 @@ Resume.document (||) '<
 
   +birthday (2003) (1) (1) (21);
   +sex ({ 男 });
+
+  +address1 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 });
+  +address2 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 });
 >
