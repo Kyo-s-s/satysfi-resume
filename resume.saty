@@ -31,6 +31,16 @@ module Resume: sig
     inline-text;
     inline-text;
   ] block-cmd
+  direct +education-history: [
+    inline-text;
+    inline-text;
+    inline-text;
+  ] block-cmd
+  direct +career-history: [
+    inline-text;
+    inline-text;
+    inline-text;
+  ] block-cmd
   direct +sex: [inline-text] block-cmd
 end = struct
   let padding-outer = 50pt
@@ -210,6 +220,28 @@ end = struct
         draw-text (x +' address-box-width -' address-box-phone-width -' 5pt -' (get-natural-width warn), y -' font-size-sm *' 2. -' 8pt) warn;
       ]
 
+  let-mutable education-history <- []
+
+  let-block ctx +education-history year month data =
+    let add =
+      (|
+        year = year;
+        month = month;
+        data = data;
+      |) in
+    let () = education-history <- List.append !education-history [add;] in block-nil
+
+  let-mutable career-history <- []
+
+  let-block ctx +career-history year month data =
+    let add =
+      (|
+        year = year;
+        month = month;
+        data = data;
+      |) in
+    let () = career-history <- List.append !career-history [add;] in block-nil
+
   let page1 ctx =
     let base-gr =
       [
@@ -261,5 +293,8 @@ Resume.document (||) '<
   +sex ({ 男 });
 
   +address1 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 });
-  +address2 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 });
+  % +address2 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 });
+  +education-history ({ 2018 }) ({ 4 }) ({ 東京都立芝浦高等学校 入学 });
+  +education-history ({ 2021 }) ({ 3 }) ({ 東京都立芝浦高等学校 卒業 });
+  +education-history ({ 2021 }) ({ 4 }) ({ 芝浦工業大学 システム工学部 入学 });
 >
