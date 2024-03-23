@@ -2,6 +2,9 @@
 @require: list
 @require: color
 @require: math
+@require: stdja
+@require: enumitem/enumitem
+@require: azmath/azmath
 
 module Resume: sig
   val document: 'a -> block-text -> document
@@ -41,14 +44,23 @@ module Resume: sig
     inline-text;
     inline-text;
   ] block-cmd
+  direct +self-pr: [
+    (context -> context)?;
+    block-text;
+  ] block-cmd
+  direct +self-desired: [
+    (context -> context)?;
+    block-text;
+  ] block-cmd
   direct +sex: [inline-text] block-cmd
 end = struct
   let padding-outer = 50pt
   let padding-inner = 30pt
   let padding-top = 55pt
+  let gap = 12pt
   let thick = 1pt
   let font-size-sm = 8pt
-  let font-size-md = 10pt
+  let font-size-md = 11pt
   let font-size-lg = 12pt
   let font-size-xl = 14pt
   let font-size-xxl = 20pt
@@ -316,7 +328,7 @@ end = struct
     let birthday-sex-box-y = name-box-y -' name-box-height in
     let address1-box-y = birthday-sex-box-y -' birthday-sex-box-height in
     let address2-box-y = address1-box-y -' address-box-height in
-    let education-and-career-history-box-y = address2-box-y -' address-box-height -' 15pt in
+    let education-and-career-history-box-y = address2-box-y -' address-box-height -' gap in
       line-break true true ctx (inline-graphics width height 0pt (fun _ -> (List.concat [
         base-gr;
         name-box ctx padding-outer name-box-y;
@@ -326,19 +338,57 @@ end = struct
         history-box ctx padding-outer education-and-career-history-box-y { 学歴・職歴 } page1-education-and-career-history-count;
       ])))
 
+  let-mutable self-pr <- block-nil
+
+  let-block ctx +self-pr ?:f it =
+    let ctx =
+      match f with
+        | None -> ctx
+          |> set-font-size font-size-md
+        | Some f -> f ctx in
+    let () = self-pr <- (read-block ctx it) in block-nil
+
+  let free-box ctx x y hgt title it =
+    let wid = width -' padding-outer -' padding-inner in
+    let it = embed-block-breakable ctx it in
+    let (_, h, _) = get-natural-metrics it in
+      [
+        draw-line (Gr.rectangle (x, y) (x +' wid, y -' hgt));
+        draw-line (Gr.line (x, y -' history-height) (x +' wid, y -' history-height));
+        draw-text (x +' 5pt, y -' font-size-md -' 4pt) (inline-md ctx title);
+        draw-text (x +' 5pt, y -' history-height -' h -' 5pt) it;
+      ]
+
+  let-mutable self-desired <- block-nil
+
+  let-block ctx +self-desired ?: f it =
+    let ctx =
+      match f with
+        | None -> ctx
+          |> set-font-size font-size-md
+        | Some f -> f ctx in
+    let () = self-desired <- (read-block ctx it) in block-nil
+
   let page2 ctx =
-    let education-and-career-history-box-y = height -' padding-top -' 10pt in
+    let self-pr-box-height = 145pt in
+    let self-desired-box-height = 110pt in
+    let education-and-career-history-box-y = height -' padding-top in
     let qualification-history-box-y = education-and-career-history-box-y -' history-height *' (float (page2-education-and-career-history-count + 1)) in
+    let self-pr-box-y = qualification-history-box-y -' history-height *' (float (6 + 1)) -' gap in
+    let self-desired-box-y = self-pr-box-y -' self-pr-box-height -' gap in
       line-break true true ctx (inline-graphics 182mm 257mm 0pt (fun _ -> List.concat [
         history-box ctx padding-inner education-and-career-history-box-y { 学歴・職歴 } page2-education-and-career-history-count;
         history-box ctx padding-inner qualification-history-box-y { 免許・資格 } 6;
+        free-box ctx padding-inner self-pr-box-y self-pr-box-height { 志望の動機，特技，アピールポイントなど } !self-pr;
+        free-box ctx padding-inner self-desired-box-y self-desired-box-height { 本人希望記入欄 (特に給料・職種・勤務時間・勤務地・その他についての希望などがあれば記入) } !self-desired;
       ]))
 
   let document record inner =
     let ctx =
-      get-initial-context 440pt (command \math)
+      get-initial-context (width -' padding-outer -' padding-inner -' 10pt) (command \math)
         |> set-dominant-narrow-script Latin
-        |> set-dominant-wide-script Kana in
+        |> set-dominant-wide-script Kana
+        |> set-paragraph-margin 2pt 2pt in
     let _ = read-block ctx inner in
     let bb = (page1 ctx) +++ (page2 ctx) in
       page-break (UserDefinedPaper(width, height)) (fun _ -> (|
@@ -365,4 +415,25 @@ Resume.document (||) '<
   +education-history ({ 2018 }) ({ 4 }) ({ 東京都立芝浦高等学校 入学 });
   +education-history ({ 2021 }) ({ 3 }) ({ 東京都立芝浦高等学校 卒業 });
   +education-history ({ 2021 }) ({ 4 }) ({ 芝浦工業大学 システム工学部 入学 });
+
+  +self-pr <
+    +p {
+      志望の動機とか自己PR
+      ほげほげほげほげほげほげほげ
+      ほげほげほげほげほげほげほげ
+      ほげほげほげほげほげほげほげ
+      ほげほげほげほげほげほげほげ
+      ほげほげほげほげほげほげほげ
+      ほげほげほげほげほげほげほげ
+      ほげほげほげほげほげほげほげ
+      ほげほげほげほげほげほげほげ
+      ほげほげほげほげほげほげほげ
+    }
+  >
+
+  +self-desired ?:(fun ctx -> ctx
+    |> set-font-size 30pt
+    |> set-text-color Color.red) <
+    +pn { 5000兆円欲しい！！ }
+  >
 >
