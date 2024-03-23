@@ -45,13 +45,13 @@ module Resume: sig
 end = struct
   let padding-outer = 50pt
   let padding-inner = 30pt
-  let padding-top = 50pt
+  let padding-top = 55pt
   let thick = 1pt
   let font-size-sm = 8pt
   let font-size-md = 10pt
   let font-size-lg = 12pt
   let font-size-xl = 14pt
-  let font-size-xxl = 18pt
+  let font-size-xxl = 20pt
 
   % B5 size
   let width = 182mm
@@ -90,7 +90,7 @@ end = struct
       |) in block-nil
 
   let name-box-width = 300pt
-  let name-box-height = 45pt
+  let name-box-height = 55pt
 
   % TODO: 名前のセンタリング
   let name-box ctx x y =
@@ -105,8 +105,8 @@ end = struct
         draw-text (x +' fi, y -' font-size-sm -' 2pt) (inline-sm ctx name#first-ruby);
         draw-dash-line (Gr.line (x, y -' font-size-sm -' 6pt) (x +' wid, y -' font-size-sm -' 6pt));
         draw-text (x +' 5pt, y -' font-size-sm *' 2. -' 8pt) (inline-sm ctx { 氏 名 });
-        draw-text (x +' la, y -' font-size-sm -' font-size-xxl -' 10pt) (inline-xxl ctx name#last);
-        draw-text (x +' fi, y -' font-size-sm -' font-size-xxl -' 10pt) (inline-xxl ctx name#first);
+        draw-text (x +' la, y -' font-size-sm -' font-size-xxl -' 14pt) (inline-xxl ctx name#last);
+        draw-text (x +' fi, y -' font-size-sm -' font-size-xxl -' 14pt) (inline-xxl ctx name#first);
       ]
 
   let-mutable birthday <-
@@ -132,7 +132,7 @@ end = struct
     let () = sex <- it in block-nil
 
   let birthday-sex-box-width = name-box-width
-  let birthday-sex-box-height = 25pt
+  let birthday-sex-box-height = 30pt
 
   let birthday-sex-box ctx x y =
     let (wid, hgt) = (birthday-sex-box-width, birthday-sex-box-height) in
@@ -141,14 +141,14 @@ end = struct
     let sex-wid = 40pt in
     let birth =
       let int-to-inline x = embed-string (arabic x) in
-      let read = inline-md ctx in
+      let read = inline-lg ctx in
       let year = (read (int-to-inline birthday#year)) ++ (read { 年 }) in
       let month = (read (int-to-inline birthday#month)) ++ (read { 月 }) in
       let day = (read (int-to-inline birthday#day)) ++ (read { 日 }) in
       let age = (read (int-to-inline birthday#age)) ++ (read { 歳 }) in year ++ month ++ day ++ (read { 生 }) ++ (read { (満 }) ++ age ++ (read { ) }) in
       [
         draw-line (Gr.rectangle (x, y) (x +' wid, y -' hgt));
-        draw-text (x +' (wid -' sex-wid) *' 0.5 -' (get-natural-width birth) *' 0.5, y -' font-size-md -' 6pt) birth;
+        draw-text (x +' (wid -' sex-wid) *' 0.5 -' (get-natural-width birth) *' 0.5, y -' font-size-lg -' 8pt) birth;
         draw-line (Gr.rectangle (x +' wid -' sex-wid, y) (x +' wid, y -' hgt));
         draw-text (x +' wid -' sex-wid +' 2pt, y -' font-size-sm -' 2pt) (inline-sm ctx { 性別 });
         draw-text (x +' wid -' sex-wid +' 20pt, y -' font-size-md -' 8pt) (inline-md ctx sex);
@@ -187,7 +187,7 @@ end = struct
       |) in block-nil
 
   let address-box-width = width -' padding-outer -' padding-inner
-  let address-box-height = 55pt
+  let address-box-height = 65pt
   let address-box-phone-width = 80pt
 
   let address-box ctx x y address =
@@ -203,9 +203,9 @@ end = struct
         draw-text (x +' 5pt, y -' font-size-sm -' 2pt) (inline-sm ctx { ふりがな });
         draw-text (x +' sx, y -' font-size-sm -' 2pt) (inline-sm ctx address#address-ruby);
         draw-text (x +' sx, y -' font-size-sm -' font-size-md -' 8pt) postal-code;
-        draw-text (x +' sx, y -' font-size-sm -' font-size-md -' font-size-xl -' 14pt) (inline-xl ctx address#address);
+        draw-text (x +' sx, y -' font-size-sm -' font-size-md -' font-size-xl -' 18pt) (inline-xl ctx address#address);
         draw-text (x +' wid -' address-box-phone-width +' 4pt, y -' font-size-sm -' 2pt) (inline-sm ctx { 電話 });
-        draw-text (x +' wid -' address-box-phone-width *' 0.5 -' (get-natural-width phone-number) *' 0.5, y -' font-size-sm -' font-size-lg -' 14pt) phone-number;
+        draw-text (x +' wid -' address-box-phone-width *' 0.5 -' (get-natural-width phone-number) *' 0.5, y -' font-size-sm -' font-size-lg -' 22pt) phone-number;
       ]
 
   let address1-box ctx x y =
@@ -220,6 +220,8 @@ end = struct
         draw-text (x +' address-box-width -' address-box-phone-width -' 5pt -' (get-natural-width warn), y -' font-size-sm *' 2. -' 8pt) warn;
       ]
 
+  % init で全体のmutable list に入れる
+  % その後，いい感じに走査...？
   let-mutable education-history <- []
 
   let-block ctx +education-history year month data =
@@ -242,29 +244,95 @@ end = struct
       |) in
     let () = career-history <- List.append !career-history [add;] in block-nil
 
+  let history-box-width = width -' padding-outer -' padding-inner
+
+  type align =  | Left | Center | Right
+
+  let page1-education-and-career-history-count = 15
+  let page2-education-and-career-history-count = 7
+  let year-width = 50pt
+  let month-width = 30pt
+  let history-height = 22pt
+
+  let history-box ctx x y kind cnt =
+    % title
+    let cnt = cnt + 1 in
+    let wid = history-box-width in
+    let h = history-height in
+    let hgt = h *' (float cnt) in
+    let-mutable index <- 0 in
+    let education-and-career-write data align =
+      let year-gr =
+        let year = inline-lg ctx data#year in
+        let x = x +' year-width *' 0.5 -' (get-natural-width year) *' 0.5 in
+        let y = y -' h *' (float !index) -' font-size-md -' 5pt in draw-text (x, y) year in
+      let month-gr =
+        let month = inline-lg ctx data#month in
+        let x = x +' year-width +' month-width *' 0.5 -' (get-natural-width month) *' 0.5 in
+        let y = y -' h *' (float !index) -' font-size-md -' 5pt in
+        let month = inline-lg ctx data#month in draw-text (x, y) month in
+      let data-gr =
+        let data = inline-lg ctx data#data in
+        let x =
+          match align with
+            | Left -> x +' year-width +' month-width +' 5pt
+            | Center -> x +' year-width +' month-width +' (wid -' year-width -' month-width -' get-natural-width data) *' 0.5
+            | Right -> x +' wid -' (get-natural-width data) -' 5pt in
+        let y = y -' h *' (float !index) -' font-size-md -' 5pt in draw-text (x, y) data in
+      let () = index <- !index + 1 in
+        [
+          year-gr;
+          month-gr;
+          data-gr;
+        ] in
+    let-rec lines i = if i == 0
+      then
+        []
+      else
+        List.append (lines (i - 1)) [
+          draw-line (Gr.line (x, y -' h *' (float i)) (x +' wid, y -' h *' (float i)));
+        ] in
+      List.concat [
+        [
+          draw-line (Gr.rectangle (x, y) (x +' wid, y -' hgt));
+          draw-line (Gr.line (x +' year-width, y) (x +' year-width, y -' hgt));
+          draw-line (Gr.line (x +' year-width +' month-width, y) (x +' year-width +' month-width, y -' hgt));
+        ];
+        lines cnt;
+        education-and-career-write (|
+          year = { 年 };
+          month = { 月 };
+          data = kind;
+        |) Center;
+      ]
+
   let page1 ctx =
     let base-gr =
       [
-        draw-text (padding-outer, height -' padding-top) (read-inline (ctx
+        draw-text (padding-outer, height -' padding-top -' 20pt) (read-inline (ctx
           |> set-font-size 20pt) { 履 歴 書 });
       ] in
-    let name-box-y = height -' padding-top -' 10pt in
+    let name-box-y = height -' padding-top -' 10pt -' 20pt in
     let birthday-sex-box-y = name-box-y -' name-box-height in
     let address1-box-y = birthday-sex-box-y -' birthday-sex-box-height in
     let address2-box-y = address1-box-y -' address-box-height in
+    let education-and-career-history-box-y = address2-box-y -' address-box-height -' 15pt in
       line-break true true ctx (inline-graphics width height 0pt (fun _ -> (List.concat [
         base-gr;
         name-box ctx padding-outer name-box-y;
         birthday-sex-box ctx padding-outer birthday-sex-box-y;
         address1-box ctx padding-outer address1-box-y;
         address2-box ctx padding-outer address2-box-y;
+        history-box ctx padding-outer education-and-career-history-box-y { 学歴・職歴 } page1-education-and-career-history-count;
       ])))
 
-  let wakudraft =
-    [
-      stroke 1pt Color.black (Gr.rectangle (30pt, 30pt) (182mm -' 30pt, 257mm -' 30pt));
-    ]
-  let page2 ctx = line-break true true ctx (inline-graphics 182mm 257mm 0pt (fun _ -> wakudraft))
+  let page2 ctx =
+    let education-and-career-history-box-y = height -' padding-top -' 10pt in
+    let qualification-history-box-y = education-and-career-history-box-y -' history-height *' (float (page2-education-and-career-history-count + 1)) in
+      line-break true true ctx (inline-graphics 182mm 257mm 0pt (fun _ -> List.concat [
+        history-box ctx padding-inner education-and-career-history-box-y { 学歴・職歴 } page2-education-and-career-history-count;
+        history-box ctx padding-inner qualification-history-box-y { 免許・資格 } 6;
+      ]))
 
   let document record inner =
     let ctx =
