@@ -463,9 +463,9 @@ end = struct
     let () = self-desired <- (read-block ctx it) in block-nil
 
   let page2 ctx =
-    let self-motivation-box-height = 150pt in
-    let self-pr-box-height = 145pt in
-    let self-desired-box-height = 110pt in
+    let self-motivation-box-height = 170pt in
+    let self-pr-box-height = 160pt in
+    let self-desired-box-height = 111pt in
     let qualification-history-box-y = height -' padding-top in
     let self-motivation-box-y = qualification-history-box-y -' history-height *' (float (qualification-history-count + 1)) -' gap in
     let self-pr-box-y = self-motivation-box-y -' self-motivation-box-height -' gap in
