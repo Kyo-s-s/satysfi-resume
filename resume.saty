@@ -32,12 +32,14 @@ module Resume: sig
     inline-text;
     inline-text;
     inline-text;
+    string;
   ] block-cmd
   direct +address2: [
     inline-text;
     inline-text;
     inline-text;
     inline-text;
+    string;
   ] block-cmd
   direct +education-history: [
     inline-text;
@@ -201,6 +203,7 @@ end = struct
       address = {};
       address-ruby = {};
       phone-number = {};
+      email = ` `;
     |)
   let-mutable address2 <-
     (|
@@ -208,28 +211,34 @@ end = struct
       address = { 同上 };
       address-ruby = {};
       phone-number = {};
+      email = ` `;
     |)
 
-  let-block ctx +address1 postal-code address address-ruby phone-number =
+  let-block ctx +address1 postal-code address address-ruby phone-number email =
     let () =
       address1 <- (|
         postal-code = postal-code;
         address = address;
         address-ruby = address-ruby;
         phone-number = phone-number;
+        email = email;
       |) in block-nil
-  let-block ctx +address2 postal-code address address-ruby phone-number =
+  let-block ctx +address2 postal-code address address-ruby phone-number email =
     let () =
       address2 <- (|
         postal-code = postal-code;
         address = address;
         address-ruby = address-ruby;
         phone-number = phone-number;
+        email = email;
       |) in block-nil
 
   let address-box-width = width -' padding-outer -' padding-inner
   let address-box-height = 65pt
-  let address-box-phone-width = 80pt
+  let address-box-phone-width = 100pt
+
+  let url link it =
+    let hook = hook-page-break (fun _ pos -> (let (w, h, d) = get-natural-metrics it in register-link-to-uri link pos w h d None)) in hook ++ it
 
   let address-box ctx x y address =
     let (wid, hgt) = (address-box-width, address-box-height) in
@@ -237,16 +246,22 @@ end = struct
     let address = !address in
     let postal-code = (inline-sm ctx { 〒 }) ++ (inline-md ctx address#postal-code) in
     let phone-number = (inline-lg ctx address#phone-number) in
+    let email =
+      let email = inline-sm ctx (embed-string address#email) in
+      let link = `mailto:` ^ address#email in url link email in
       [
         draw-line (Gr.rectangle (x, y) (x +' wid -' address-box-phone-width, y -' hgt));
         draw-line (Gr.rectangle (x +' wid -' address-box-phone-width, y) (x +' wid, y -' hgt));
+        draw-line (Gr.line (x +' wid -' address-box-phone-width, y -' address-box-height *' 0.5) (x +' wid, y -' address-box-height *' 0.5));
         draw-dash-line (Gr.line (x, y -' font-size-sm -' 6pt) (x +' wid -' address-box-phone-width, y -' font-size-sm -' 6pt));
         draw-text (x +' 5pt, y -' font-size-sm -' 2pt) (inline-sm ctx { ふりがな });
         draw-text (x +' sx, y -' font-size-sm -' 2pt) (inline-sm ctx address#address-ruby);
         draw-text (x +' sx, y -' font-size-sm -' font-size-md -' 8pt) postal-code;
         draw-text (x +' sx, y -' font-size-sm -' font-size-md -' font-size-xl -' 18pt) (inline-xl ctx address#address);
         draw-text (x +' wid -' address-box-phone-width +' 4pt, y -' font-size-sm -' 2pt) (inline-sm ctx { 電話 });
-        draw-text (x +' wid -' address-box-phone-width *' 0.5 -' (get-natural-width phone-number) *' 0.5, y -' font-size-sm -' font-size-lg -' 22pt) phone-number;
+        draw-text (x +' wid -' address-box-phone-width *' 0.5 -' (get-natural-width phone-number) *' 0.5, y -' font-size-sm -' font-size-lg -' 6pt) phone-number;
+        draw-text (x +' wid -' address-box-phone-width +' 4pt, y -' font-size-sm -' 34pt) (inline-sm ctx { メールアドレス });
+        draw-text (x +' wid -' address-box-phone-width *' 0.5 -' (get-natural-width email) *' 0.5, y -' font-size-sm -' font-size-lg -' 36pt) email;
       ]
 
   let address1-box ctx x y =
@@ -532,8 +547,8 @@ Resume.document (||) '<
   +birthday (2003) (1) (1) (21);
   +sex ({ 男 });
 
-  +address1 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 });
-  % +address2 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 });
+  +address1 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 }) (`hogehogehogehoge@gmail.com`);
+  % +address2 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 }) (`https://chat.openai.com/c/c68135cf-ea60-4c56-b472-90bcc0132409`);
   +education-history ({ 2018 }) ({ 4 }) ({ 東京都立芝浦高等学校 入学 });
   +education-history ({ 2021 }) ({ 3 }) ({ 東京都立芝浦高等学校 卒業 });
   +education-history ({ 2021 }) ({ 4 }) ({ 芝浦工業大学 システム工学部 入学 });
