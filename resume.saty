@@ -44,6 +44,11 @@ module Resume: sig
     inline-text;
     inline-text;
   ] block-cmd
+  direct +qualification-history: [
+    inline-text;
+    inline-text;
+    inline-text;
+  ] block-cmd
   direct +self-pr: [
     (context -> context)?;
     block-text;
@@ -256,6 +261,17 @@ end = struct
       |) in
     let () = career-history <- List.append !career-history [add;] in block-nil
 
+  let-mutable qualification-history <- []
+
+  let-block ctx +qualification-history year month data =
+    let add =
+      (|
+        year = year;
+        month = month;
+        data = data;
+      |) in
+    let () = qualification-history <- List.append !qualification-history [add;] in block-nil
+
   let history-box-width = width -' padding-outer -' padding-inner
 
   type align =  | Left | Center | Right
@@ -266,7 +282,69 @@ end = struct
   let month-width = 30pt
   let history-height = 22pt
 
-  let history-box ctx x y kind cnt =
+  let history-fin =
+    ((|
+      year = {};
+      month = {};
+      data = { 以上 };
+    |), Right)
+
+  let education-and-career-list =
+    let education =
+      if List.length !education-history == 0
+      then
+        []
+      else
+        List.concat [
+          [
+            ((|
+              year = {};
+              month = {};
+              data = { 学歴 };
+            |), Center);
+          ];
+          List.map (fun data -> (data, Left)) !education-history;
+          [
+            ((|
+              year = {};
+              month = {};
+              data = {};
+            |), Center);
+          ];
+        ] in
+    let career =
+      if List.length !career-history == 0
+      then
+        []
+      else
+        List.concat [
+          [
+            ((|
+              year = {};
+              month = {};
+              data = { 職歴 };
+            |), Center);
+          ];
+          List.map (fun data -> (data, Left)) !career-history;
+        ] in
+      List.concat [
+        education;
+        career;
+        [
+          ((|
+            year = {};
+            month = {};
+            data = { 現在に至る };
+          |), Left);
+          ((|
+            year = {};
+            month = {};
+            data = { 以上 };
+          |), Right);
+        ];
+      ]
+
+  let history-box ctx x y kind cnt write =
     % title
     let cnt = cnt + 1 in
     let wid = history-box-width in
@@ -316,6 +394,7 @@ end = struct
           month = { 月 };
           data = kind;
         |) Center;
+        List.concat (List.map (fun (data, align) -> education-and-career-write data align) write);
       ]
 
   let page1 ctx =
@@ -335,7 +414,7 @@ end = struct
         birthday-sex-box ctx padding-outer birthday-sex-box-y;
         address1-box ctx padding-outer address1-box-y;
         address2-box ctx padding-outer address2-box-y;
-        history-box ctx padding-outer education-and-career-history-box-y { 学歴・職歴 } page1-education-and-career-history-count;
+        history-box ctx padding-outer education-and-career-history-box-y { 学歴・職歴 } page1-education-and-career-history-count [];
       ])))
 
   let-mutable self-pr <- block-nil
@@ -375,10 +454,11 @@ end = struct
     let education-and-career-history-box-y = height -' padding-top in
     let qualification-history-box-y = education-and-career-history-box-y -' history-height *' (float (page2-education-and-career-history-count + 1)) in
     let self-pr-box-y = qualification-history-box-y -' history-height *' (float (6 + 1)) -' gap in
+    let qualification-list = List.append (List.map (fun data -> (data, Left)) !qualification-history) [history-fin;] in
     let self-desired-box-y = self-pr-box-y -' self-pr-box-height -' gap in
       line-break true true ctx (inline-graphics 182mm 257mm 0pt (fun _ -> List.concat [
-        history-box ctx padding-inner education-and-career-history-box-y { 学歴・職歴 } page2-education-and-career-history-count;
-        history-box ctx padding-inner qualification-history-box-y { 免許・資格 } 6;
+        history-box ctx padding-inner education-and-career-history-box-y { 学歴・職歴 } page2-education-and-career-history-count [];
+        history-box ctx padding-inner qualification-history-box-y { 免許・資格 } 6 qualification-list;
         free-box ctx padding-inner self-pr-box-y self-pr-box-height { 志望の動機，特技，アピールポイントなど } !self-pr;
         free-box ctx padding-inner self-desired-box-y self-desired-box-height { 本人希望記入欄 (特に給料・職種・勤務時間・勤務地・その他についての希望などがあれば記入) } !self-desired;
       ]))
@@ -415,6 +495,11 @@ Resume.document (||) '<
   +education-history ({ 2018 }) ({ 4 }) ({ 東京都立芝浦高等学校 入学 });
   +education-history ({ 2021 }) ({ 3 }) ({ 東京都立芝浦高等学校 卒業 });
   +education-history ({ 2021 }) ({ 4 }) ({ 芝浦工業大学 システム工学部 入学 });
+
+  +qualification-history ({ 2021 }) ({ 5 }) ({ AtCoder 入茶 });
+  +qualification-history ({ 2021 }) ({ 7 }) ({ AtCoder 入緑 });
+  +qualification-history ({ 2021 }) ({ 10 }) ({ AtCoder 入水 });
+  +qualification-history ({ 2022 }) ({ 4 }) ({ AtCoder 入青 });
 
   +self-pr <
     +p {
