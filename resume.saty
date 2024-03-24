@@ -8,6 +8,11 @@
 
 module Resume: sig
   val document: 'a -> block-text -> document
+  direct +date: [
+    int;
+    int;
+    int;
+  ] block-cmd
   direct +name: [
     inline-text;
     inline-text;
@@ -86,6 +91,21 @@ end = struct
   let inline-lg ctx = read-inline (set-font-size font-size-lg ctx)
   let inline-xl ctx = read-inline (set-font-size font-size-xl ctx)
   let inline-xxl ctx = read-inline (set-font-size font-size-xxl ctx)
+
+  let-mutable date <-
+    (|
+      year = 2024;
+      month = 3;
+      day = 24;
+    |)
+
+  let-block ctx +date year month day =
+    let () =
+      date <- (|
+        year = year;
+        month = month;
+        day = day;
+      |) in block-nil
 
   let-mutable name <-
     (|
@@ -403,10 +423,16 @@ end = struct
 
   let page1 ctx =
     let base-gr =
-      [
-        draw-text (padding-outer, height -' padding-top -' 20pt) (read-inline (ctx
-          |> set-font-size 20pt) { 履 歴 書 });
-      ] in
+      let date =
+        let date = !date in
+        let year = (inline-md ctx (embed-string (arabic date#year))) ++ (inline-md ctx { 年 }) in
+        let month = inline-md ctx (embed-string (arabic date#month)) ++ (inline-md ctx { 月 }) in
+        let day = inline-md ctx (embed-string (arabic date#day)) ++ (inline-md ctx { 日 }) in year ++ month ++ day ++ (inline-md ctx { 現在 }) in
+        [
+          draw-text (padding-outer, height -' padding-top -' 20pt) (read-inline (ctx
+            |> set-font-size 20pt) { 履 歴 書 });
+          draw-text (padding-outer +' name-box-width -' (get-natural-width date), height -' padding-top -' 20pt) date;
+        ] in
     let name-box-y = height -' padding-top -' 10pt -' 20pt in
     let birthday-sex-box-y = name-box-y -' name-box-height in
     let address1-box-y = birthday-sex-box-y -' birthday-sex-box-height in
@@ -499,6 +525,7 @@ end
 in
 
 Resume.document (||) '<
+  +date (2024) (3) (30);
   +name ({ 芝浦 }) ({ 太郎 });
   +name-ruby ({ しばうら }) ({ たろう });
 
