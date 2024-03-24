@@ -49,6 +49,10 @@ module Resume: sig
     inline-text;
     inline-text;
   ] block-cmd
+  direct +self-motivation: [
+    (context -> context)?;
+    block-text;
+  ] block-cmd
   direct +self-pr: [
     (context -> context)?;
     block-text;
@@ -181,7 +185,7 @@ end = struct
   let-mutable address2 <-
     (|
       postal-code = {};
-      address = {};
+      address = { 同上 };
       address-ruby = {};
       phone-number = {};
     |)
@@ -276,8 +280,8 @@ end = struct
 
   type align =  | Left | Center | Right
 
-  let page1-education-and-career-history-count = 15
-  let page2-education-and-career-history-count = 7
+  let education-and-career-history-count = 16
+  let qualification-history-count = 6
   let year-width = 50pt
   let month-width = 30pt
   let history-height = 22pt
@@ -289,9 +293,9 @@ end = struct
       data = { 以上 };
     |), Right)
 
-  let education-and-career-list =
+  let education-and-career-list education-history career-history =
     let education =
-      if List.length !education-history == 0
+      if List.length education-history == 0
       then
         []
       else
@@ -303,7 +307,7 @@ end = struct
               data = { 学歴 };
             |), Center);
           ];
-          List.map (fun data -> (data, Left)) !education-history;
+          List.map (fun data -> (data, Left)) education-history;
           [
             ((|
               year = {};
@@ -313,7 +317,7 @@ end = struct
           ];
         ] in
     let career =
-      if List.length !career-history == 0
+      if List.length career-history == 0
       then
         []
       else
@@ -325,7 +329,7 @@ end = struct
               data = { 職歴 };
             |), Center);
           ];
-          List.map (fun data -> (data, Left)) !career-history;
+          List.map (fun data -> (data, Left)) career-history;
         ] in
       List.concat [
         education;
@@ -414,18 +418,8 @@ end = struct
         birthday-sex-box ctx padding-outer birthday-sex-box-y;
         address1-box ctx padding-outer address1-box-y;
         address2-box ctx padding-outer address2-box-y;
-        history-box ctx padding-outer education-and-career-history-box-y { 学歴・職歴 } page1-education-and-career-history-count [];
+        history-box ctx padding-outer education-and-career-history-box-y { 学歴・職歴 } education-and-career-history-count (education-and-career-list !education-history !career-history);
       ])))
-
-  let-mutable self-pr <- block-nil
-
-  let-block ctx +self-pr ?:f it =
-    let ctx =
-      match f with
-        | None -> ctx
-          |> set-font-size font-size-md
-        | Some f -> f ctx in
-    let () = self-pr <- (read-block ctx it) in block-nil
 
   let free-box ctx x y hgt title it =
     let wid = width -' padding-outer -' padding-inner in
@@ -438,6 +432,26 @@ end = struct
         draw-text (x +' 5pt, y -' history-height -' h -' 5pt) it;
       ]
 
+  let-mutable self-motivation <- block-nil
+
+  let-block ctx +self-motivation ?:f it =
+    let ctx =
+      match f with
+        | None -> ctx
+          |> set-font-size font-size-md
+        | Some f -> f ctx in
+    let () = self-motivation <- (read-block ctx it) in block-nil
+
+  let-mutable self-pr <- block-nil
+
+  let-block ctx +self-pr ?:f it =
+    let ctx =
+      match f with
+        | None -> ctx
+          |> set-font-size font-size-md
+        | Some f -> f ctx in
+    let () = self-pr <- (read-block ctx it) in block-nil
+
   let-mutable self-desired <- block-nil
 
   let-block ctx +self-desired ?: f it =
@@ -449,17 +463,18 @@ end = struct
     let () = self-desired <- (read-block ctx it) in block-nil
 
   let page2 ctx =
+    let self-motivation-box-height = 150pt in
     let self-pr-box-height = 145pt in
     let self-desired-box-height = 110pt in
-    let education-and-career-history-box-y = height -' padding-top in
-    let qualification-history-box-y = education-and-career-history-box-y -' history-height *' (float (page2-education-and-career-history-count + 1)) in
-    let self-pr-box-y = qualification-history-box-y -' history-height *' (float (6 + 1)) -' gap in
+    let qualification-history-box-y = height -' padding-top in
+    let self-motivation-box-y = qualification-history-box-y -' history-height *' (float (qualification-history-count + 1)) -' gap in
+    let self-pr-box-y = self-motivation-box-y -' self-motivation-box-height -' gap in
     let qualification-list = List.append (List.map (fun data -> (data, Left)) !qualification-history) [history-fin;] in
     let self-desired-box-y = self-pr-box-y -' self-pr-box-height -' gap in
       line-break true true ctx (inline-graphics 182mm 257mm 0pt (fun _ -> List.concat [
-        history-box ctx padding-inner education-and-career-history-box-y { 学歴・職歴 } page2-education-and-career-history-count [];
-        history-box ctx padding-inner qualification-history-box-y { 免許・資格 } 6 qualification-list;
-        free-box ctx padding-inner self-pr-box-y self-pr-box-height { 志望の動機，特技，アピールポイントなど } !self-pr;
+        history-box ctx padding-inner qualification-history-box-y { 免許・資格 } qualification-history-count qualification-list;
+        free-box ctx padding-inner self-motivation-box-y self-motivation-box-height { 志望動機 } !self-motivation;
+        free-box ctx padding-inner self-pr-box-y self-pr-box-height { 趣味，特技，アピールポイントなど } !self-pr;
         free-box ctx padding-inner self-desired-box-y self-desired-box-height { 本人希望記入欄 (特に給料・職種・勤務時間・勤務地・その他についての希望などがあれば記入) } !self-desired;
       ]))
 
@@ -496,23 +511,22 @@ Resume.document (||) '<
   +education-history ({ 2021 }) ({ 3 }) ({ 東京都立芝浦高等学校 卒業 });
   +education-history ({ 2021 }) ({ 4 }) ({ 芝浦工業大学 システム工学部 入学 });
 
+  +career-history ({ 2021 }) ({ 4 }) ({ 株式会社芝浦工業 インターンシップ });
+
   +qualification-history ({ 2021 }) ({ 5 }) ({ AtCoder 入茶 });
   +qualification-history ({ 2021 }) ({ 7 }) ({ AtCoder 入緑 });
   +qualification-history ({ 2021 }) ({ 10 }) ({ AtCoder 入水 });
   +qualification-history ({ 2022 }) ({ 4 }) ({ AtCoder 入青 });
 
+  +self-motivation <
+    +p { お気持ち }
+  >
+
   +self-pr <
     +p {
       志望の動機とか自己PR
-      ほげほげほげほげほげほげほげ
-      ほげほげほげほげほげほげほげ
-      ほげほげほげほげほげほげほげ
-      ほげほげほげほげほげほげほげ
-      ほげほげほげほげほげほげほげ
-      ほげほげほげほげほげほげほげ
-      ほげほげほげほげほげほげほげ
-      ほげほげほげほげほげほげほげ
-      ほげほげほげほげほげほげほげ
+      ほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげ
+      ほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげほげ
     }
   >
 
