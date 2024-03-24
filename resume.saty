@@ -13,6 +13,7 @@ module Resume: sig
     int;
     int;
   ] block-cmd
+  direct +face-img: [string] block-cmd
   direct +name: [
     inline-text;
     inline-text;
@@ -79,7 +80,7 @@ end = struct
   let font-size-md = 11pt
   let font-size-lg = 12pt
   let font-size-xl = 14pt
-  let font-size-xxl = 20pt
+  let font-size-xxl = 22pt
 
   % B5 size
   let width = 182mm
@@ -93,6 +94,11 @@ end = struct
   let inline-lg ctx = read-inline (set-font-size font-size-lg ctx)
   let inline-xl ctx = read-inline (set-font-size font-size-xl ctx)
   let inline-xxl ctx = read-inline (set-font-size font-size-xxl ctx)
+
+  let-mutable face-img <- None
+
+  let-block ctx +face-img img-path =
+    let () = face-img <- Some(img-path) in block-nil
 
   let-mutable date <-
     (|
@@ -133,7 +139,7 @@ end = struct
       |) in block-nil
 
   let name-box-width = 300pt
-  let name-box-height = 55pt
+  let name-box-height = 60pt
 
   % TODO: 名前のセンタリング
   let name-box ctx x y =
@@ -148,8 +154,8 @@ end = struct
         draw-text (x +' fi, y -' font-size-sm -' 2pt) (inline-sm ctx name#first-ruby);
         draw-dash-line (Gr.line (x, y -' font-size-sm -' 6pt) (x +' wid, y -' font-size-sm -' 6pt));
         draw-text (x +' 5pt, y -' font-size-sm *' 2. -' 8pt) (inline-sm ctx { 氏 名 });
-        draw-text (x +' la, y -' font-size-sm -' font-size-xxl -' 14pt) (inline-xxl ctx name#last);
-        draw-text (x +' fi, y -' font-size-sm -' font-size-xxl -' 14pt) (inline-xxl ctx name#first);
+        draw-text (x +' la, y -' font-size-sm -' font-size-xxl -' 16pt) (inline-xxl ctx name#last);
+        draw-text (x +' fi, y -' font-size-sm -' font-size-xxl -' 16pt) (inline-xxl ctx name#first);
       ]
 
   let-mutable birthday <-
@@ -443,11 +449,21 @@ end = struct
         let year = (inline-md ctx (embed-string (arabic date#year))) ++ (inline-md ctx { 年 }) in
         let month = inline-md ctx (embed-string (arabic date#month)) ++ (inline-md ctx { 月 }) in
         let day = inline-md ctx (embed-string (arabic date#day)) ++ (inline-md ctx { 日 }) in year ++ month ++ day ++ (inline-md ctx { 現在 }) in
+      let img-x = width -' padding-outer -' 90pt in
+      let img-y = height -' padding-top in
+      let (img-w, img-h) = (30mm, 40mm) in
+      let img =
+        match !face-img with
+          | None -> []
+          | Some(p) -> [
+            draw-text (img-x, img-y -' img-h) (use-image-by-width (load-image p) img-w);
+          ] in
         [
-          draw-text (padding-outer, height -' padding-top -' 20pt) (read-inline (ctx
-            |> set-font-size 20pt) { 履 歴 書 });
+          draw-text (padding-outer, height -' padding-top -' 20pt) (inline-xxl ctx { 履 歴 書 });
           draw-text (padding-outer +' name-box-width -' (get-natural-width date), height -' padding-top -' 20pt) date;
-        ] in
+          draw-line (Gr.rectangle (img-x, img-y) (img-x +' img-w, img-y -' img-h));
+        ]
+          |> List.append img in
     let name-box-y = height -' padding-top -' 10pt -' 20pt in
     let birthday-sex-box-y = name-box-y -' name-box-height in
     let address1-box-y = birthday-sex-box-y -' birthday-sex-box-height in
@@ -504,7 +520,7 @@ end = struct
     let () = self-desired <- (read-block ctx it) in block-nil
 
   let page2 ctx =
-    let self-motivation-box-height = 170pt in
+    let self-motivation-box-height = 175pt in
     let self-pr-box-height = 160pt in
     let self-desired-box-height = 111pt in
     let qualification-history-box-y = height -' padding-top in
@@ -541,6 +557,7 @@ in
 
 Resume.document (||) '<
   +date (2024) (3) (30);
+  +face-img (`./kyo-icon.jpg`);
   +name ({ 芝浦 }) ({ 太郎 });
   +name-ruby ({ しばうら }) ({ たろう });
 
@@ -548,7 +565,7 @@ Resume.document (||) '<
   +sex ({ 男 });
 
   +address1 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 }) (`hogehogehogehoge@gmail.com`);
-  % +address2 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 }) (`https://chat.openai.com/c/c68135cf-ea60-4c56-b472-90bcc0132409`);
+
   +education-history ({ 2018 }) ({ 4 }) ({ 東京都立芝浦高等学校 入学 });
   +education-history ({ 2021 }) ({ 3 }) ({ 東京都立芝浦高等学校 卒業 });
   +education-history ({ 2021 }) ({ 4 }) ({ 芝浦工業大学 システム工学部 入学 });
