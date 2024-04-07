@@ -36,18 +36,18 @@ module Resume: sig
     string;
   ] block-cmd
   direct +education-history: [
-    int;
-    int;
+    inline-text;
+    inline-text;
     inline-text;
   ] block-cmd
   direct +career-history: [
-    int;
-    int;
+    inline-text;
+    inline-text;
     inline-text;
   ] block-cmd
   direct +qualification-history: [
-    int;
-    int;
+    inline-text;
+    inline-text;
     inline-text;
   ] block-cmd
   direct +self-motivation: [
@@ -273,31 +273,37 @@ end = struct
         draw-text (x +' address-box-width -' address-box-phone-width -' 5pt -' (get-natural-width warn), y -' font-size-sm *' 2. -' 8pt) warn;
       ]
 
-  let gen-history year month data =
-    let year = embed-string (arabic year) in
-    let month = embed-string (arabic month) in
-      (|
-        year = { #year; };
-        month = { #month; };
-        data = data;
-      |)
-
   let-mutable education-history <- []
 
   let-block ctx +education-history year month data =
-    let add = gen-history year month data in
+    let add =
+      (|
+        year = year;
+        month = month;
+        data = data;
+      |) in
     let () = education-history <- List.append !education-history [add;] in block-nil
 
   let-mutable career-history <- []
 
   let-block ctx +career-history year month data =
-    let add = gen-history year month data in
+    let add =
+      (|
+        year = year;
+        month = month;
+        data = data;
+      |) in
     let () = career-history <- List.append !career-history [add;] in block-nil
 
   let-mutable qualification-history <- []
 
   let-block ctx +qualification-history year month data =
-    let add = gen-history year month data in
+    let add =
+      (|
+        year = year;
+        month = month;
+        data = data;
+      |) in
     let () = qualification-history <- List.append !qualification-history [add;] in block-nil
 
   let history-box-width = width -' padding-outer -' padding-inner

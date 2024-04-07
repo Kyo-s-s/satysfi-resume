@@ -31,11 +31,11 @@ Resume.document (|
 - `+address2 (inline-text) (inline-text) (inline-text) (inline-text) (string)`:
   連絡先を記述します。引数は `+address1` と同様です。
 
-- `education-history (int) (int) (inline-text)`:
+- `education-history (inline-text) (inline-text) (inline-text)`:
   学歴を記述します。それぞれ 年 / 月 / 内容 です。
-- `career-history (int) (int) (inline-text)`:
+- `career-history (inline-text) (inline-text) (inline-text)`:
   職歴を記述します。それぞれ 年 / 月 / 内容 です。
-- `qualification-history (int) (int) (inline-text)`:
+- `qualification-history (inline-text) (inline-text) (inline-text)`:
   免許/資格を記述します。それぞれ 年 / 月 / 内容 です。
 - `+self-motivation ?:(context -> context) (block-text)`:
   志望動機を記述します。 
