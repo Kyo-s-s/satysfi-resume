@@ -11,19 +11,21 @@
 ```
 
 ```
-Resume.document (||) '<
+Resume.document (|
+  date = (2024, 4, 8); % 記述日 年/月/日 (int * int * int)
+  birthday = (2003, 1, 1); % 誕生日 年/月/日 (int * int * int)
+  age = 21; % 満年齢 (int)
+  sex = { 男 }; % 性別 (inline-text)
+|) '<
   % ここに履歴書の内容を記述します
 >
 ```
 
 以下のコマンドを用いて記述します。
 
-- `+date (int) (int) (int)`: 書いた日です。 年 / 月 / 日 を指定します。
 - `+face-img (string)`: 顔写真のファイル名を指定します。4:3の画像を指定してください。
 - `+name (inline-text) (inline-text)`: 名前を指定します。それぞれ姓/名です。
 - `+name-ruby (inline-text) (inline-text)`: 名前のふりがなを指定します。それぞれ姓/名です。
-- `+birthday (int) (int) (int) (int)`: 年 / 月 / 日 / 満年齢 を指定します。
-- `+sex (inline-text)`: 性別を指定します。
 - `+address1 (inline-text) (inline-text) (inline-text) (inline-text) (string)`:
   住所を記述します。それぞれ 郵便番号 / 住所 / 住所振り仮名 / 電話番号 / メールアドレス です。メールアドレスはリンクが付きます。
 - `+address2 (inline-text) (inline-text) (inline-text) (inline-text) (string)`:

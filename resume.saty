@@ -2,14 +2,15 @@
 @require: stdja
 @require: enumitem/enumitem
 
-Resume.document (||) '<
-  +date (2024) (3) (30);
+Resume.document (|
+  date = (2024, 3, 30);
+  birthday = (2003, 1, 1);
+  age = 21;
+  sex = { 男 };
+|) '<
   +face-img (`./kyo-icon.jpg`);
   +name ({ 芝浦 }) ({ 太郎 });
   +name-ruby ({ しばうら }) ({ たろう });
-
-  +birthday (2003) (1) (1) (21);
-  +sex ({ 男 });
 
   +address1 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 }) (`hogehogehogehoge@gmail.com`);
 

@@ -3,13 +3,15 @@
 @require: color
 @require: math
 
+type config = (|
+  date: int * int * int;
+  birthday: int * int * int;
+  age: int;
+  sex: inline-text;
+|)
+
 module Resume: sig
-  val document: 'a -> block-text -> document
-  direct +date: [
-    int;
-    int;
-    int;
-  ] block-cmd
+  val document: config -> block-text -> document
   direct +face-img: [string] block-cmd
   direct +name: [
     inline-text;
@@ -18,12 +20,6 @@ module Resume: sig
   direct +name-ruby: [
     inline-text;
     inline-text;
-  ] block-cmd
-  direct +birthday: [
-    int;
-    int;
-    int;
-    int;
   ] block-cmd
   direct +address1: [
     inline-text;
@@ -66,7 +62,6 @@ module Resume: sig
     (context -> context)?;
     block-text;
   ] block-cmd
-  direct +sex: [inline-text] block-cmd
 end = struct
   let padding-outer = 50pt
   let padding-inner = 30pt
@@ -104,13 +99,12 @@ end = struct
       day = 24;
     |)
 
-  let-block ctx +date year month day =
-    let () =
-      date <- (|
-        year = year;
-        month = month;
-        day = day;
-      |) in block-nil
+  let set-date year month day =
+    date <- (|
+      year = year;
+      month = month;
+      day = day;
+    |)
 
   let-mutable name <-
     (|
@@ -166,20 +160,17 @@ end = struct
       age = 21;
     |)
 
-  let-block ctx +birthday year month day age =
-    let () =
-      birthday <- (|
-        year = year;
-        month = month;
-        day = day;
-        age = age;
-      |) in block-nil
+  let set-birthday year month day age =
+    birthday <- (|
+      year = year;
+      month = month;
+      day = day;
+      age = age;
+    |)
 
   let-mutable sex <- {}
 
-  let-block ctx +sex it =
-    let () = sex <- it in block-nil
-
+  let set-sex it = sex <- it
   let birthday-sex-box-width = name-box-width
   let birthday-sex-box-height = 30pt
 
@@ -282,8 +273,6 @@ end = struct
         draw-text (x +' address-box-width -' address-box-phone-width -' 5pt -' (get-natural-width warn), y -' font-size-sm *' 2. -' 8pt) warn;
       ]
 
-  % init で全体のmutable list に入れる
-  % その後，いい感じに走査...？
   let-mutable education-history <- []
 
   let-block ctx +education-history year month data =
@@ -536,6 +525,12 @@ end = struct
       ]))
 
   let document record inner =
+    let () =
+      let (year, month, day) = record#date in set-date year month day in
+    let () =
+      let (year, month, day) = record#birthday in
+      let age = record#age in set-birthday year month day age in
+    let () = set-sex record#sex in
     let ctx =
       get-initial-context (width -' padding-outer -' padding-inner -' 10pt) (command \math)
         |> set-dominant-narrow-script Latin
