@@ -14,16 +14,16 @@ Resume.document (|
 
   +address1 ({ 123-4567 }) ({ 東京都港区芝浦1-2-3 }) ({ とうきょうとみなとくしばうら1-2-3 }) ({ 090-1234-5678 }) (`hogehogehogehoge@gmail.com`);
 
-  +education-history ({ 2018 }) ({ 4 }) ({ 東京都立芝浦高等学校 入学 });
-  +education-history ({ 2021 }) ({ 3 }) ({ 東京都立芝浦高等学校 卒業 });
-  +education-history ({ 2021 }) ({ 4 }) ({ 芝浦工業大学 システム工学部 入学 });
+  +education-history (2018) (4) ({ 東京都立芝浦高等学校 入学 });
+  +education-history (2021) (3) ({ 東京都立芝浦高等学校 卒業 });
+  +education-history (2021) (4) ({ 芝浦工業大学 システム工学部 入学 });
 
-  +career-history ({ 2021 }) ({ 4 }) ({ 株式会社芝浦工業 インターンシップ });
+  +career-history (2021) (4) ({ 株式会社芝浦工業 インターンシップ });
 
-  +qualification-history ({ 2021 }) ({ 5 }) ({ AtCoder 入茶 });
-  +qualification-history ({ 2021 }) ({ 7 }) ({ AtCoder 入緑 });
-  +qualification-history ({ 2021 }) ({ 10 }) ({ AtCoder 入水 });
-  +qualification-history ({ 2022 }) ({ 4 }) ({ AtCoder 入青 });
+  +qualification-history (2021) (5) ({ AtCoder 入茶 });
+  +qualification-history (2021) (7) ({ AtCoder 入緑 });
+  +qualification-history (2021) (10) ({ AtCoder 入水 });
+  +qualification-history (2022) (4) ({ AtCoder 入青 });
 
   +self-motivation <
     +p { お気持ち }
