@@ -5,7 +5,6 @@
 
 type config = (|
   date: int * int * int;
-  age: int * int * int;
   birthday: int * int * int;
   age: int;
   sex: inline-text;
