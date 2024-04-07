@@ -138,21 +138,24 @@ end = struct
   let name-box-width = 300pt
   let name-box-height = 60pt
 
-  % TODO: 名前のセンタリング
   let name-box ctx x y =
     let name = !name in
     let (wid, hgt) = (name-box-width, name-box-height) in
-    let la = 70pt in
-    let fi = 150pt in
+    let last-ruby = inline-sm ctx name#last-ruby in
+    let first-ruby = inline-sm ctx name#first-ruby in
+    let last = inline-xxl ctx name#last in
+    let first = inline-xxl ctx name#first in
+    let la-c = 120pt in
+    let fi-c = 200pt in
       [
         draw-line (Gr.rectangle (x, y) (x +' wid, y -' hgt));
         draw-text (x +' 5pt, y -' font-size-sm -' 2pt) (inline-sm ctx { ふりがな });
-        draw-text (x +' la, y -' font-size-sm -' 2pt) (inline-sm ctx name#last-ruby);
-        draw-text (x +' fi, y -' font-size-sm -' 2pt) (inline-sm ctx name#first-ruby);
+        draw-text (x +' la-c -' (get-natural-width last-ruby) *' 0.5, y -' font-size-sm -' 2pt) last-ruby;
+        draw-text (x +' fi-c -' (get-natural-width first-ruby) *' 0.5, y -' font-size-sm -' 2pt) first-ruby;
         draw-dash-line (Gr.line (x, y -' font-size-sm -' 6pt) (x +' wid, y -' font-size-sm -' 6pt));
         draw-text (x +' 5pt, y -' font-size-sm *' 2. -' 8pt) (inline-sm ctx { 氏 名 });
-        draw-text (x +' la, y -' font-size-sm -' font-size-xxl -' 16pt) (inline-xxl ctx name#last);
-        draw-text (x +' fi, y -' font-size-sm -' font-size-xxl -' 16pt) (inline-xxl ctx name#first);
+        draw-text (x +' la-c -' (get-natural-width last) *' 0.5, y -' font-size-sm -' font-size-xxl -' 16pt) last;
+        draw-text (x +' fi-c -' (get-natural-width first) *' 0.5, y -' font-size-sm -' font-size-xxl -' 16pt) first;
       ]
 
   let-mutable birthday <-
